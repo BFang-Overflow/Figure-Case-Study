@@ -112,6 +112,7 @@ To achieve high IMU Accuracy  the following factors need to be considered during
 ### REQ-001 Attitude Accuracy
 #### TEST-001 IMU full range accuracy sweep
 This test checks for IMU's accuracy with small changes and impluse changes.
+
 <u>Test Procedure:</u>
 1. Zero IMU location, RS-422 link to direct connection.
 2. Parameterized test sweeping each axis with 1 degree steps.
@@ -124,6 +125,7 @@ This test checks for IMU's accuracy with small changes and impluse changes.
 
 #### TEST-002 IMU temperature compensation check
 This test check for IMU's temperature compenstaion algorigthm implementation.
+
 <u>Test Procedure:</u>
 1. Parameterized test sweeping temperature from  -40&#176;C to +85&#176;C with 5&#176;C steps.
 2. Run TEST-001
@@ -136,6 +138,7 @@ This test check for IMU's temperature compenstaion algorigthm implementation.
     **Assumption-** Assume IMU has data processing and correction algorithms implemented to prevent drifting.
 This test check for IMU's coorection algorithms. This is a run on idel test that run opportunistically when
 no other job is available.
+
 <u>Test Procedure:</u>
 1. Zero IMU location, set test chamber to room temp, RS-422 link to direct connection.
 2. Assert inital value is within expected zero location range +/- 0.1 degree.
@@ -151,6 +154,7 @@ no other job is available.
 ~~This test check if IMU brings good vibe for the robot :sunglasses:~~
 This test check for linear accelaration's affect on angular infomation. Check for motor control pwm
 requency or load switching freqency from the near by subsystems that is within the sensor's bandwidth.
+
 <u>Test Procedure:</u>
 1. Parameterized test with critical frequencies.
 2. Set vibration shaker to each frequency and measure assert reported attitude data within accuracy.
@@ -161,12 +165,41 @@ requency or load switching freqency from the near by subsystems that is within t
 
 
 
-### REQ-002 RS-422 Error Rate Test
+### REQ-002 RS-422 Error Rate
 #### TEST-005 RS-422 Error Rate Test
 !!! tip Assumptions
-    **Assumption-** The robot harness has been designed properly
-This test checks for error rate with on the RS-422 link with reprentative switching that would run
-parallel to the RS-422 link.
+    **Assumption-** The robot harness has been designed properly and tested with reprentative
+    switching laod that would run parallel to the RS-422 link in the robot. This test can also
+    be used for the characterization.
+This test mainly targeting the IMU APP's ability to detect and report error rate correctly as a
+regression test. The goal is to ensure the error rate stat is accurate.
+
+<u>Test Procedure:</u>
+1. Switch RS-422 link to fault injections mod connecting:
+    `tester PC RS-422 out` <-> `RS-422 link` <-> `IMU APP computer`
+2. Norminal Case send over 2e^5 messages, check total error reported <= 2
+3. Fault Case send over 2e^5 messages, with 6 error message check total error reported <= (2+6)
+
+### REQ-003 2ms Delay limit
+#### TEST-006 IMU delay test
+!!! tip Assumptions
+    **Assumption-** The time it takes from host PC sending a command to the rate table response is
+    a well defined time.
+    **Assumption-** The IMU linux computer has network access and can do NTP (Network Time Protocol)
+
+NTP is used to synchronize the clocks of all systems involved in the testing process to ensure accurate event timing.
+
+<u>Test Procedure:</u>
+1. Tester computer and IMU APP computer preform time stnchronization.
+2. Trigger a physical event and record time stemp.
+3. Repeat step2 for all axis directions.
+4. Process time stemp assert all latency is less than 2ms.
+
+!!! note
+    **Alternatives considered:**
+    + `GPS-based Time Synchronization`: For even higher precision, GPS receivers provide time synchronization down to nanoseconds.
+    + `Trigger Output`: The signal generator should output a trigger signal simultaneously with the physical event. This signal can act as a reference point for when the event occurs.
+    + `Oscilloscope or Logic Analyzer`: Use a scope or logic analyzer to capture signal coming out of IMU and a triger from linux computer when data is posted.
 
 
 
@@ -179,7 +212,9 @@ parallel to the RS-422 link.
     - Log run time for maintaince reminder
 
 
-## Tester Design Docs
+## Tester Build Docs
+
+This is the build doc for the IMU subsystem automation test.
 + Block Diagram
 + Schematics
 + Check List
@@ -197,23 +232,7 @@ parallel to the RS-422 link.
 
 ```python
 
-def this is a fake section, needs work
-import time
 
-# Simulate the event trigger timestamp (T_event)
-T_event = time.perf_counter()
-
-# Simulate waiting for the IMUApp to publish data
-# In a real scenario, this would be the point at which the IMUApp publishes its data
-time.sleep(0.0015)  # Simulating a delay of 1.5ms
-
-# Capture the timestamp when the data is published (T_output)
-T_output = time.perf_counter()
-
-# Calculate the delay
-latency = (T_output - T_event) * 1000  # Convert to milliseconds
-
-print(f"Measured delay: {latency:.3f} ms")
 
 
 ```
