@@ -86,11 +86,6 @@ The test setup utilizes a rate table with thermal chamber build as the main piec
 For more detail [Link to build doc](#tester-build-docs)
 
 
-
-
-
-
-
 ## Assumptions
 
 Assumptions are important, below listed the top level assumptions of the whole system. Specific
@@ -102,7 +97,7 @@ assumptions will show up as notes within their context for easy reference.
     design margins and the hardware has been validated for basic operations.
     **Assumption-2** The IMU is a stand alone in house control unit with its own MCU and it implements
     standrad protocols on top of the RS-422 interface. The IMU firmware is also regression target.
-    **Assumption-3** The IMU is a MEMS type IMU in this applicaiton without magnetometer. Otherwise
+    **Assumption-3** The IMU is a Silicon MEMS type IMU in this applicaiton without magnetometer. Otherwise
     further environment control measures are needed.
     **Assumption-4** The IMU has on board temperature sense and well defined calibration routines.
     **Assumption-5** DUT and test set up has been checked for worksmanship and build to print.
@@ -113,7 +108,11 @@ assumptions will show up as notes within their context for easy reference.
     can also be done for hardware validatoin, reliability, and manufacturing with different focus. Those
     test usage and set up are not considered.
 
-
+!!! note
+    When a lower cost solution is desired. In case it is not obvious. The test set up is designed to have
+    really clean connections between the lift side (Heavy equipment) and the right side (tester rack).
+    In the case of we don't need as much of IMU hardware involvement. The IMU app can be tested with
+    simulated IMU data, and still run on real linux hardward.
 
 
 ## Design Considerations
@@ -154,14 +153,22 @@ image source: [inertial-navigation-primer-r3](Reference/inertial-navigation-prim
 
 #### IMU design considerations
 To achieve high IMU Accuracy  the following factors need to be considered during design and validtions.
-**Temperatures**
+
+1. **Zero-Bias Temperature Hysteresis**: IMU output can deviate due to temperature changes. Using temperature compensation algorithms and choosing brands with precise compensation technology ensures reliability.
+2. **Vibration Characteristics**: IMUs should handle vibrations with features like vibration isolation and filtering to maintain accuracy.
+3. **Repeated Power-On Deviation**: Bias may vary after power cycles, impacting calibration. IMUs with minimal deviation or built-in compensation ensure long-term stability.
+4. **External Forces**: Shock-resistant designs reduce deviations under external forces.
+5. **Nonlinear Factor**: Lower %Fs ensures better measurement accuracy across the range.
+
 **Calibrations**
+Calibrating an IMU involves placing it on a stable surface for static calibration, then using manufacturer-provided software to guide through the process. Dynamic calibration follows, where the IMU is moved along different axes to adjust for sensor biases. If a magnetometer is included, rotate the IMU fully to capture magnetic field data, avoiding interference. Finally, verify accuracy by comparing outputs to expected values, and re-calibrate periodically to maintain performance.
+
 ### RS-422 Spec
 ![RS-422-wiring](/doc_images/rs422_wiring.png)
 ![RS-422](/doc_images/rs422.png)
-| Start Bit | Data Bits (8 bits) | Parity Bit | Stop Bit(s) |
-|:---------:|:-------------------:|:-----------:|:------------:|
-|     0     |      D0 D1 D2 D3 D4 D5 D6 D7    |      P      |      1       |
+| Start Bit |   Data Bits (8 bits)    | Parity Bit | Stop Bit(s) |
+| :-------: | :---------------------: | :--------: | :---------: |
+|     0     | D0 D1 D2 D3 D4 D5 D6 D7 |     P      |      1      |
 
 ---
 
@@ -227,8 +234,7 @@ no other job is available.
 
 #### TEST-004 IMU vibe check
 ~~This test check if IMU brings good vibe for the robot :sunglasses:~~
-This test check for linear accelaration's affect on angular infomation. Check for motor control pwm
-requency or load switching freqency from the near by subsystems that is within the sensor's bandwidth.
+External factors like vibrations can affect IMU reading. And withing the robot there are some inheritent vibrations resulting from motor control and opearations. This test check for IMU system's ability to filter and offeset the linear accelaration's affect on angular infomation. Check for motor control pwm requency or load switching freqency from the near by subsystems that is within the sensor's bandwidth.
 
 <u>Test Procedure:</u>
 1. Zero IMU location, set test chamber to room temp, RS-422 link to direct connection.
@@ -260,24 +266,36 @@ regression test. The goal is to ensure the error rate stat is accurate.
 ### REQ-003 2ms Delay limit
 #### TEST-006 IMU delay test
 
-TODO: Add timing diagram
+![latency_diagram](/doc_images/Latency_Timing_Graph)
 
 !!! tip Assumptions
     **Assumption-** The time taken for the host PC to send a command and receive a response from the rate table is known and well-defined.
-    **Assumption-** The IMU Linux computer has access to a network and can synchronize its clock with the tester PC using NTP.
-This test verifies that the latency between a physical event and the data published by the IMUApp is within the specified 2 ms limit. The test uses Network Time Protocol (NTP) to synchronize the clocks of the test systems, ensuring that accurate event timing is maintained.
+    **Assumption-** The IMU Linux computer and the tester PC has access to GPS receiver for GPS Clock sync.
+
+This test verifies that the latency between a physical event and the data published by the IMUApp is within the specified 2 ms limit. The test uses GPS Clock to synchronize the clocks of the test systems, ensuring that accurate event timing is maintained.
 
 <u>Test Procedure:</u>
 
 1. Zero IMU location, set test chamber to room temp, RS-422 link to direct connection.
-2. Ensure that both the tester computer and the IMUApp computer synchronize their clocks using NTP.
+2. Ensure that both the tester computer and the IMUApp computer synchronize their clocks using GPS Clock.
 3. Trigger a physical event and record time stemp.
 4. Repeat for all axis directions.
 5. Process time stemp assert all latency is less than 2ms.
 
+!!! info
+    GPS time sync accuracy is highly precise, with the ability to synchronize clocks and networks to Coordinated Universal Time (UTC) with an accuracy of 30 nanoseconds or less 95% of the time.
+    **Atomic clocks**
+    GPS satellites contain atomic clocks that keep time to within three nanoseconds.
+    **GPS receivers**
+    GPS receivers decode the signals from the satellites to synchronize themselves to the atomic clocks
+
+    Time card option example:
+    ![time_card](/doc_images/time_card.png)
+    ![time_card_spec](/doc_images/time_card_spec.png)
+
 !!! note
     **Alternatives considered:**
-    + `GPS-based Time Synchronization`: For even higher precision, GPS receivers provide time synchronization down to nanoseconds.
+    + `Network Time Protocol (NTP)`: NTP can synchronize time across devices that differ by milliseconds to tens of milliseconds, even over wide-area networks (WANs) like the internet.
     + `Trigger Output`: The signal generator should output a trigger signal simultaneously with the physical event. This signal can act as a reference point for when the event occurs.
     + `Oscilloscope or Logic Analyzer`: Use a scope or logic analyzer to capture signal coming out of IMU and a triger from linux computer when data is posted.
 
@@ -405,6 +423,7 @@ LOG_INTERVAL_MS = 0.5            # Interval in seconds for logging trace data (0
 LOG_FILE_SIZE = 5 * 1024 * 1024  # 5MB maximum size for each log file
 BACKUP_COUNT = 3                 # Keep 3 backup log files
 ROOM_TEMP_C = 26.0               # Room temp 26C
+EVENT_REACTION_TIME_MS = 0.045   # The Reaction time from a command to physical event
 
 class 422LinkType(Enum):
     NORMAL = auto()
@@ -467,9 +486,9 @@ def setup_imu_and_tester():
     tester.set_temp(ROOM_TEMP_C)
     tester.set_422_link(422LinkType.NORMAL)
 
-    # Step 2: Perform time synchronization using NTP
-    linux_computer.ntp_sync()
-    tester.ntp_sync()
+    # Step 2: Perform time synchronization using GPS Clock
+    linux_computer.gps_sync()
+    tester.gps_sync()
 
     # Start trace logging thread
     stop_event = threading.Event()
@@ -517,15 +536,15 @@ def test_imu_delay(axis, turn_degrees, setup_imu_and_tester):
     imu_data = linux_computer.get_data()  # Assuming this method fetches the data with timestamp
 
     # Calculate latency (T_output - T_event)
-    latency = (imu_data['timestamp'] - event_timestamp) * 1000  # Convert to milliseconds
+    latency_ms = (imu_data['timestamp'] - event_timestamp) * 1000 - EVENT_REACTION_TIME_MS
 
     # Log message for the specific axis and turn
-    logger.info(f"IMU latency for {axis} axis, {turn_degrees} degree: {latency:.3f} ms")
+    logger.info(f"IMU latency for {axis} axis, {turn_degrees} degree: {latency_ms:.3f} ms")
 
     # Step 5: Assert that the latency is below the maximum allowed value
     try:
-        assert latency <= MAX_LATENCY_MS, (
-            f"Latency too high: {latency:.3f} ms for {axis} axis, {event_size} event"
+        assert latency_ms <= MAX_LATENCY_MS, (
+            f"Latency too high: {latency_ms:.3f} ms for {axis} axis, {event_size} event"
         )
     except AssertionError as e:
         logger.error(f"Assertion failed: {e}")
@@ -533,8 +552,8 @@ def test_imu_delay(axis, turn_degrees, setup_imu_and_tester):
 
 
 # Test framework API assumptions:
-# imu.ntp_sync() -> Synchronizes IMU clock with NTP
-# tester.ntp_sync() -> Synchronizes Tester computer clock with NTP
+# imu.gps_sync() -> Synchronizes IMU clock with GPS Clock
+# tester.gps_sync() -> Synchronizes Tester computer clock with GPS Clock
 # tester.set_rate_table(axis, degree) -> Triggers a physical event of specified degree on the given axis and returns the event time
 # linux_computer.get_data() -> Returns a dictionary with IMU data and a 'timestamp' key indicating when the data was published
 # linux_computer.get_system_stats() -> Returns system statistics from the Linux computer
@@ -553,6 +572,7 @@ def test_imu_delay(axis, turn_degrees, setup_imu_and_tester):
 + Share automations script that can also be leverage for design validation.
 
 **Firmware Eng:**
++ Communicate to fw dev on what is our existing automation tester capability.
 + Reling on fw team to help understand certain system behavoir, debug trace.
 + Request additional data logging or new service routine to be added.
 + Scope automation infra needs for developers to create tests as the develop new fetures.
@@ -579,6 +599,12 @@ def test_imu_delay(axis, turn_degrees, setup_imu_and_tester):
 + Learn about other subsystem automation setup and what can be reused.
 
 ### Processes and Tools
+
+Having a interactive test requirement tracking process would be helpful for a rapidly moving organization.
+As new requirement and assumptions emerge quickly in a start up. An easy to use `test requirement
+tracking matirx` tool that could provide low friction for developer to keep it up to date, and also provide a tracking of existing coverage and their state of health would offer great benefit. The team can have the minimum amount of coverage at early stage with quick implimentation and add duplicated coverage when feature matured for more test bandwidth and availability.
+
+
 A **nice-to-have** leader board for people to put up their common conplaints and desired quality of
 life improvement will be a good way to create traction on making feedback or improvoments.
 
