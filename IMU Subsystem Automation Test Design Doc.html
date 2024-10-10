@@ -34,14 +34,14 @@
     and implementing a Python test case.
     </p>
     <br>
-<pre class="language-text">*** This is a mock documentation, presented in the mannar
+<pre class="language-text">*** This is a mock documentation, presented in the manner
 I would normally have in a working doc to point internal
 teams to.
 </pre>
    </div>
   <div style="flex: 50%; padding: 10px;">
     <h3>Point of Contacts</h3>
-    <b>Electircal Eng:</b> xxx<br>
+    <b>Electrical Eng:</b> xxx<br>
     <b>Firmware Eng:</b> xxx<br>
     <b>QA Eng:</b> xxx<br>
     <b>System Integration Eng:</b> xxx<br>
@@ -54,7 +54,6 @@ teams to.
   </div>
 </div>
 <h2 id="table-of-contents">Table of Contents </h2>
-<p>TODO: rege before final release</p>
 <ul>
 <li><a href="#figure-imu-subsystem-automation-test-design-doc">Figure IMU Subsystem Automation Test Design Doc</a>
 <ul>
@@ -80,7 +79,7 @@ teams to.
 <li><a href="#rs-422-spec">RS-422 Spec</a></li>
 </ul>
 </li>
-<li><a href="#test-covorage">Test Covorage</a>
+<li><a href="#test-coverage">Test Coverage</a>
 <ul>
 <li><a href="#req-001-attitude-accuracy">REQ-001 Attitude Accuracy</a>
 <ul>
@@ -100,7 +99,7 @@ teams to.
 <li><a href="#test-006-imu-delay-test">TEST-006 IMU delay test</a></li>
 </ul>
 </li>
-<li><a href="#other-considerations">Other Considerations</a></li>
+<li><a href="#additional-test-infrastructure">Additional Test Infrastructure</a></li>
 </ul>
 </li>
 <li><a href="#tester-build-docs">Tester Build Docs</a>
@@ -139,6 +138,11 @@ teams to.
 <p>The test setup utilizes a rate table with thermal chamber build as the main piece of equipment to provide precise control of the IMU position. A safety system (robot cell) is put in place to ensure the safety of turn table operation. A small tester rack is used to host other additional parts.</p>
 <p><img src="doc_images/IMU_Test_System_Block_Diagram.drawio.png" alt="IMU_Test_System_Block_Diagram.drawio"></p>
 <p>For more detail <a href="#tester-build-docs">Link to build doc</a></p>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p><strong>What is a rate table</strong><br>
+A <strong>Two Axis Positioning and Rate Table System</strong> is a precision platform used for testing and calibrating sensors like gyroscopes and accelerometers by simulating controlled rotational movements along two perpendicular axes, pitch (vertical) and yaw (horizontal). These systems are designed for <code>high accuracy</code> in both positioning and <code>rate of motion</code>. They can achieve very fine angular resolutions, making them suitable for sensor calibration. <img src="doc_images\rate_table.png" alt="rate_table"></p>
+</div>
 <h2 id="assumptions">Assumptions </h2>
 <p>Assumptions are important, below listed the top level assumptions of the whole system. Specific<br>
 assumptions will show up as notes within their context for easy reference.</p>
@@ -147,17 +151,24 @@ assumptions will show up as notes within their context for easy reference.</p>
 <p><strong>Assumption-1</strong> The IMU System hardware has been designed to meet the requirement with reasonable<br>
 design margins and the hardware has been validated for basic operations.<br>
 <strong>Assumption-2</strong> The IMU is a stand alone in house control unit with its own MCU and it implements<br>
-standrad protocols on top of the RS-422 interface. The IMU firmware is also regression target.<br>
-<strong>Assumption-3</strong> The IMU is a MEMS type IMU in this applicaiton without magnetometer. Otherwise<br>
+standard protocols on top of the RS-422 interface. The IMU firmware is also regression target.<br>
+<strong>Assumption-3</strong> The IMU is a Silicon MEMS type IMU in this application without magnetometer. Otherwise<br>
 further environment control measures are needed.<br>
 <strong>Assumption-4</strong> The IMU has on board temperature sense and well defined calibration routines.<br>
-<strong>Assumption-5</strong> DUT and test set up has been checked for worksmanship and build to print.<br>
+<strong>Assumption-5</strong> DUT and test set up has been checked for workmanship and build to print.<br>
 <strong>Assumption-6</strong> Testing covers a Industrial operating temperatures range of -40°C to +85°C.<br>
-<strong>Assumption-7</strong> Test system design proritize preformance and accuracy with reasonable cost.<br>
-<strong>Assumption-8</strong> System Computer running linux-RT the IMU app is allocated adquate resources and priority.<br>
-<strong>Assumption-9</strong> This case study focus on automation test for firmware regressions. Automations tests<br>
-can also be done for hardware validatoin, reliability, and manufacturing with different focus. Those<br>
+<strong>Assumption-7</strong> Test system design prioritize performance and accuracy with reasonable cost.<br>
+<strong>Assumption-8</strong> System Computer running linux-RT the IMU app is allocated adequate resources and priority.<br>
+<strong>Assumption-9</strong> This case study focus on automation test for firmware regressions. Automation tests<br>
+can also be done for hardware validation, reliability, and manufacturing with different focus. Those<br>
 test usage and set up are not considered.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When a lower cost solution is desired. In case it is not obvious. The test set up is designed to have<br>
+really clean connections between the lift side (Heavy equipment) and the right side (tester rack).<br>
+In the case of we don't need as much of IMU hardware involvement. The IMU app can be tested with<br>
+simulated IMU data, and still run on real linux hardware.</p>
 </div>
 <h2 id="design-considerations">Design Considerations </h2>
 <h2 id="system-analysis">System Analysis </h2>
@@ -170,7 +181,7 @@ test usage and set up are not considered.</p>
 <li><strong>Magnetometers</strong> (optional in some IMUs): Measure the magnetic field, providing orientation relative to Earth's magnetic field for better heading determination.</li>
 </ol>
 <p>These components work together to provide information on motion, orientation, and velocity in space.<br>
-<img src="doc_images/accelerometers-imu.gif" alt="acceler"></p>
+<img src="doc_images/accelerometers-imu.gif" alt="accelerometer"></p>
 <h4 id="types-of-imus-and-limitations">Types of IMUs and limitations </h4>
 <p>IMUs come in several types, each with different strengths:</p>
 <ol>
@@ -190,9 +201,16 @@ test usage and set up are not considered.</p>
 <h4 id="gyroscope-performance-grades">Gyroscope Performance Grades </h4>
 <p><img src="doc_images/gyro_ins_grd.jpg" alt="gyro_grade"></p>
 <h4 id="imu-design-considerations">IMU design considerations </h4>
-<p>To achieve high IMU Accuracy  the following factors need to be considered during design and validtions.<br>
-<strong>Temperatures</strong><br>
-<strong>Calibrations</strong></p>
+<p>To achieve high IMU Accuracy  the following factors need to be considered during design and validations.</p>
+<ol>
+<li><strong>Zero-Bias Temperature Hysteresis</strong>: IMU output can deviate due to temperature changes. Using temperature compensation algorithms and choosing brands with precise compensation technology ensures reliability.</li>
+<li><strong>Vibration Characteristics</strong>: IMUs should handle vibrations with features like vibration isolation and filtering to maintain accuracy.</li>
+<li><strong>Repeated Power-On Deviation</strong>: Bias may vary after power cycles, impacting calibration. IMUs with minimal deviation or built-in compensation ensure long-term stability.</li>
+<li><strong>External Forces</strong>: Shock-resistant designs reduce deviations under external forces.</li>
+<li><strong>Nonlinear Factor</strong>: Lower %Fs ensures better measurement accuracy across the range.</li>
+</ol>
+<p><strong>Calibrations</strong><br>
+Calibrating an IMU involves placing it on a stable surface for static calibration, then using manufacturer-provided software to guide through the process. Dynamic calibration follows, where the IMU is moved along different axes to adjust for sensor biases. If a magnetometer is included, rotate the IMU fully to capture magnetic field data, avoiding interference. Finally, verify accuracy by comparing outputs to expected values, and re-calibrate periodically to maintain performance.</p>
 <h3 id="rs-422-spec">RS-422 Spec </h3>
 <p><img src="doc_images\rs422_wiring.png" alt="RS-422-wiring"><br>
 <img src="doc_images\rs422.png" alt="RS-422"></p>
@@ -215,13 +233,13 @@ test usage and set up are not considered.</p>
 </tbody>
 </table>
 <hr>
-<h2 id="test-covorage">Test Covorage </h2>
+<h2 id="test-coverage">Test Coverage </h2>
 <p><img src="doc_images/IMU_System_Requirements.png" alt="IMU_System_Requirements_Image"></p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>Test Things Where Most Effective:</strong> There are various ways we could test this subsystem. It<br>
-could be a full simulated enviroment with each component been moduled in a Software in the loop(SIL)<br>
-test, or we could instrument and modify the IMU to inject ditial signals that replaces sensor IC<br>
+could be a full simulated environment with each component been module in a Software in the loop(SIL)<br>
+test, or we could instrument and modify the IMU to inject digital signals that replaces sensor IC<br>
 signals to avoid use of heavy equipment and improve fault injection ability. Or a system similar<br>
 to the proposed setup could be achieved at lower cost with less capabilities. And in real world,<br>
 we are likely to have each favor of the test infra and setup. Ideally we have all coverage on all<br>
@@ -235,21 +253,25 @@ happen at test tear down which is omitted in the procedures below.</p>
 </div>
 <h3 id="req-001-attitude-accuracy">REQ-001 Attitude Accuracy </h3>
 <h4 id="test-001-imu-full-range-accuracy-sweep">TEST-001 IMU full range accuracy sweep </h4>
-<p>This test checks for IMU's accuracy with small changes and impluse changes.</p>
+<p>This test checks for IMU's accuracy with small changes and impulse changes.</p>
 <p><u>Test Procedure:</u></p>
 <ol>
 <li>Zero IMU location, RS-422 link to direct connection.</li>
 <li>Parameterized test sweeping each axis with 1 degree steps.</li>
-<li>Assert for each step the reported meansure is within +/- 0.1 degree of the set position.</li>
+<li>Assert for each step the reported measure is within +/- 0.1 degree of the set position.</li>
 <li>Parameterized test sweeping each axis with 180 degree steps.</li>
-<li>Assert for each step the reported meansure is within +/- 0.1 degree of the set position.</li>
+<li>Assert for each step the reported measure is within +/- 0.1 degree of the set position.</li>
 </ol>
 <div class="admonition tip">
 <p class="admonition-title">Assumptions</p>
 <p><strong>Assumption-</strong> The rate table is calibrated, it's set position is true position.</p>
 </div>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>The safety system will have a safety loop using magmatic connectors for form a safety loop. The rate table will emergency shunt off when the mage connector is disconnected. The safety loop harness is designed to be short than the RS-422 link harness to prevent and pull damage. And the rate table controls are also implemented to avoid wire pulling. <img src="doc_images\mag_connector.png" alt="mag_connector"></p>
+</div>
 <h4 id="test-002-imu-temperature-compensation-check">TEST-002 IMU temperature compensation check </h4>
-<p>This test check for IMU's temperature compenstaion algorigthm implementation.</p>
+<p>This test check for IMU's temperature compensation algorithm implementation.</p>
 <p><u>Test Procedure:</u></p>
 <ol>
 <li>Parameterized test sweeping temperature from  -40°C to +85°C with 5°C steps.</li>
@@ -257,32 +279,31 @@ happen at test tear down which is omitted in the procedures below.</p>
 </ol>
 <div class="admonition tip">
 <p class="admonition-title">Assumptions</p>
-<p><strong>Assumption-</strong> Tester has enough bandwidth for running test. In real life, re</p>
+<p><strong>Assumption-</strong> Tester has enough bandwidth to run this test overnight.</p>
 </div>
 <h4 id="test-003-imu-drift-test">TEST-003 IMU drift test </h4>
 <div class="admonition tip">
 <p class="admonition-title">Assumptions</p>
 <p><strong>Assumption-</strong> Assume IMU has data processing and correction algorithms implemented to prevent drifting.</p>
 </div>
-<p>This test check for IMU's coorection algorithms. This is a run on idel test that run opportunistically when<br>
+<p>This test check for IMU's correction algorithms. This is a run on idle test that run opportunistically when<br>
 no other job is available.</p>
 <p><u>Test Procedure:</u></p>
 <ol>
 <li>Zero IMU location, set test chamber to room temp, RS-422 link to direct connection.</li>
-<li>Assert inital value is within expected zero location range +/- 0.1 degree.</li>
-<li>Record inital value and start a timer.</li>
-<li>Assert on every data recieved is within drift rate bound until terminated by governor.</li>
+<li>Assert initial value is within expected zero location range +/- 0.1 degree.</li>
+<li>Record initial value and start a timer.</li>
+<li>Assert on every data received is within drift rate bound until terminated by governor.</li>
 <li>On teardown check upload drift rate measured in this test period in addition to results for data trend.</li>
 </ol>
 <div class="admonition tip">
 <p class="admonition-title">Assumptions</p>
-<p><strong>Assumption-</strong> Assume we have a test job govorner running. We can notify job to end if we sees<br>
+<p><strong>Assumption-</strong> Assume we have a test job governor running. We can notify job to end if we sees<br>
 other jobs come in.</p>
 </div>
 <h4 id="test-004-imu-vibe-check">TEST-004 IMU vibe check </h4>
 <p><s>This test check if IMU brings good vibe for the robot 😎</s><br>
-This test check for linear accelaration's affect on angular infomation. Check for motor control pwm<br>
-requency or load switching freqency from the near by subsystems that is within the sensor's bandwidth.</p>
+External factors like vibrations can affect IMU reading. And withing the robot there are some inherent vibrations resulting from motor control and operations. This test check for IMU system's ability to filter and offset the linear acceleration's affect on angular information. Check for motor control pwm frequency or load switching frequency from the near by subsystems that is within the sensor's bandwidth.</p>
 <p><u>Test Procedure:</u></p>
 <ol>
 <li>Zero IMU location, set test chamber to room temp, RS-422 link to direct connection.</li>
@@ -291,71 +312,92 @@ requency or load switching freqency from the near by subsystems that is within t
 </ol>
 <div class="admonition caution">
 <p class="admonition-title">Check</p>
-<p>Comfirm with hardward team, this likely can be a hardware characterization test instead of a<br>
+<p>Confirm with hardware team, this likely can be a hardware characterization test instead of a<br>
 regression item until further lessons learned.</p>
 </div>
 <h3 id="req-002-rs-422-error-rate">REQ-002 RS-422 Error Rate </h3>
 <h4 id="test-005-rs-422-error-rate-test">TEST-005 RS-422 Error Rate Test </h4>
 <div class="admonition tip">
 <p class="admonition-title">Assumptions</p>
-<p><strong>Assumption-</strong> The robot harness has been designed properly and tested with reprentative<br>
-switching laod that would run parallel to the RS-422 link in the robot. This test can also<br>
+<p><strong>Assumption-</strong> The robot harness has been designed properly and tested with representative<br>
+switching load that would run parallel to the RS-422 link in the robot. This test can also<br>
 be used for the characterization.</p>
 </div>
-<p>This test mainly targeting the IMU APP's ability to detect and report error rate correctly as a<br>
+<p><img src="doc_images\Error_rate_connection.drawio.png" alt="error-rate_connection"><br>
+This test mainly targeting the IMU APP's ability to detect and report error rate correctly as a<br>
 regression test. The goal is to ensure the error rate stat is accurate.</p>
 <p><u>Test Procedure:</u></p>
 <ol>
 <li>Zero IMU location, set test chamber to room temp.</li>
 <li>Switch RS-422 link to fault injections mod connecting:<br>
 <code>tester PC RS-422 out</code> &lt;-&gt; <code>RS-422 link</code> &lt;-&gt; <code>IMU APP computer</code></li>
-<li>Norminal Case send over 2e^5 messages, check total error reported &lt;= 2</li>
+<li>Nominal Case send over 2e^5 messages, check total error reported &lt;= 2</li>
 <li>Fault Case send over 2e^5 messages, with 6 error message check total error reported &lt;= (2+6)</li>
 </ol>
 <h3 id="req-003-2ms-delay-limit">REQ-003 2ms Delay limit </h3>
 <h4 id="test-006-imu-delay-test">TEST-006 IMU delay test </h4>
-<p>TODO: Add timing diagram</p>
+<p><img src="doc_images\Latency_Timing_Graph.png" alt="latency_diagram"></p>
 <div class="admonition tip">
 <p class="admonition-title">Assumptions</p>
 <p><strong>Assumption-</strong> The time taken for the host PC to send a command and receive a response from the rate table is known and well-defined.<br>
-<strong>Assumption-</strong> The IMU Linux computer has access to a network and can synchronize its clock with the tester PC using NTP.</p>
+<strong>Assumption-</strong> The IMU Linux computer and the tester PC has access to GPS receiver for GPS Clock sync.</p>
 </div>
-<p>This test verifies that the latency between a physical event and the data published by the IMUApp is within the specified 2 ms limit. The test uses Network Time Protocol (NTP) to synchronize the clocks of the test systems, ensuring that accurate event timing is maintained.</p>
+<p>This test verifies that the latency between a physical event and the data published by the IMUApp is within the specified 2 ms limit. The test uses GPS Clock to synchronize the clocks of the test systems, ensuring that accurate event timing is maintained.</p>
 <p><u>Test Procedure:</u></p>
 <ol>
 <li>Zero IMU location, set test chamber to room temp, RS-422 link to direct connection.</li>
-<li>Ensure that both the tester computer and the IMUApp computer synchronize their clocks using NTP.</li>
-<li>Trigger a physical event and record time stemp.</li>
+<li>Ensure that both the tester computer and the IMUApp computer synchronize their clocks using GPS Clock.</li>
+<li>Trigger a physical event and record time stamp.</li>
 <li>Repeat for all axis directions.</li>
-<li>Process time stemp assert all latency is less than 2ms.</li>
+<li>Process time stamp assert all latency is less than 2ms.</li>
 </ol>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>GPS time sync accuracy is highly precise, with the ability to synchronize clocks and networks to Coordinated Universal Time (UTC) with an accuracy of 30 nanoseconds or less 95% of the time.<br>
+<strong>Atomic clocks</strong><br>
+GPS satellites contain atomic clocks that keep time to within three nanoseconds.<br>
+<strong>GPS receivers</strong><br>
+GPS receivers decode the signals from the satellites to synchronize themselves to the atomic clocks</p>
+<p>Time card option example:<br>
+<img src="doc_images\time_card.png" alt="time_card"><br>
+<img src="doc_images\time_card_spec.png" alt="time_card_spec"></p>
+</div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>Alternatives considered:</strong></p>
 <ul>
-<li><code>GPS-based Time Synchronization</code>: For even higher precision, GPS receivers provide time synchronization down to nanoseconds.</li>
+<li><code>EtherCAT Distributed Clocks</code>:  EtherCAT can achieve time synchronization accuracy on the order of &lt;1 µs (microsecond), with typical values often being around 100 ns (nanoseconds), depending on factors like network topology, number of devices, and cable lengths.</li>
+<li><code>Network Time Protocol (NTP)</code>: NTP can synchronize time across devices that differ by milliseconds to tens of milliseconds, even over wide-area networks (WANs) like the internet.</li>
 <li><code>Trigger Output</code>: The signal generator should output a trigger signal simultaneously with the physical event. This signal can act as a reference point for when the event occurs.</li>
-<li><code>Oscilloscope or Logic Analyzer</code>: Use a scope or logic analyzer to capture signal coming out of IMU and a triger from linux computer when data is posted.</li>
+<li><code>Oscilloscope or Logic Analyzer</code>: Use a scope or logic analyzer to capture signal coming out of IMU and a trigger from linux computer when data is posted.</li>
 </ul>
 </div>
-<h3 id="other-considerations">Other Considerations </h3>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Other test / logging that could be considered:</p>
-<ul>
-<li>CPU usage stats of the IMU app</li>
-<li>Test equipment health check</li>
-<li>Measure key value delta from average value from pervious mainline releases</li>
-<li>Log run time for maintaince reminder</li>
-</ul>
-</div>
+<h3 id="additional-test-infrastructure">Additional Test Infrastructure </h3>
+<pre class="language-text">Other test / logging that could be considered:
+- CPU usage stats of the IMU app
+- Test equipment health check
+- Measure key value delta from average value from pervious mainline releases
+- Log run time for maintenance reminder
+</pre>
 <hr>
 <h2 id="tester-build-docs">Tester Build Docs </h2>
 <p>This is the build doc for the IMU subsystem automation test.<br>
 <strong>POC</strong>: Bill Fang<br>
 <strong>Needed by</strong>: <code>Nov 15, 2024</code><br>
 <strong>Budget Cost</strong> : SPEND123<br>
-<strong>Job Categories</strong>: <code>heavy equipment land</code> <code>mechinical build</code> <code>harness build</code> <code>small rack build</code></p>
+<strong>Job Categories</strong>: <code>heavy equipment land</code> <code>mechanical build</code> <code>harness build</code> <code>small rack build</code></p>
+<ul>
+<li><a href="#tester-build-docs">Tester Build Docs</a><br>
+- <a href="#block-diagram">Block Diagram</a><br>
+- <a href="#schematics">Schematics</a><br>
+- <a href="#bom">BOM</a><br>
+- <a href="#check-list">Check List</a><br>
+- <a href="#equipment-manual">Equipment Manual</a><br>
+- <a href="#harness-diagram">Harness Diagram</a><br>
+- <a href="#cable-007">Cable 007</a><br>
+- <a href="#provision-instructions">Provision Instructions</a><br>
+- <a href="#check-network-settings">Check Network Settings</a></li>
+</ul>
 <h3 id="block-diagram">Block Diagram </h3>
 <p><img src="doc_images/IMU_Test_System_Block_Diagram.drawio.png" alt="IMU_Test_System_Block_Diagram.drawio"></p>
 <h3 id="schematics">Schematics </h3>
@@ -367,16 +409,23 @@ regression test. The goal is to ensure the error rate stat is accurate.</p>
 <h3 id="check-list">Check List </h3>
 <ul>
 <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" checked=""> Schematics Walk Through</li>
-<li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox"> BOM procement</li>
+<li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox"> BOM procurement</li>
 <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox"> Space allocation</li>
 <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox"> Facility Drop Requirement</li>
-<li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox"> Internal parts procement</li>
+<li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox"> Internal parts placement</li>
 <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox"> Harness build</li>
 <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox"> PC provision</li>
 <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox"> Rack build</li>
 <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox"> ......</li>
 </ul>
 <h3 id="equipment-manual">Equipment Manual </h3>
+<p><strong>Power Supply Rigol DP831A (DP800Series)</strong><br>
+<a href="Reference\DP800%20Datasheet.pdf">Data Sheet</a><br>
+<a href="Reference\DP800%20Programming%20Guide.pdf">Programming Guide</a><br>
+<img src="doc_images\DP800.png" alt="DP800"></p>
+<p><strong>Rate Table Ideal Aerosmith 1572P</strong><br>
+<a href="Reference\Rate-Table-1572P.pdf">Spec Sheet</a><br>
+<img src="doc_images\rate_table.png" alt="Rate-Table"></p>
 <h3 id="harness-diagram">Harness Diagram </h3>
 <h4 id="cable-007">Cable 007 </h4>
 <p><img src="Harness_docs/Cable007/Cable007.png" alt="Cable007"><br>
@@ -450,6 +499,7 @@ LOG_INTERVAL_MS <span class="token operator">=</span> <span class="token number"
 LOG_FILE_SIZE <span class="token operator">=</span> <span class="token number">5</span> <span class="token operator">*</span> <span class="token number">1024</span> <span class="token operator">*</span> <span class="token number">1024</span>  <span class="token comment"># 5MB maximum size for each log file</span>
 BACKUP_COUNT <span class="token operator">=</span> <span class="token number">3</span>                 <span class="token comment"># Keep 3 backup log files</span>
 ROOM_TEMP_C <span class="token operator">=</span> <span class="token number">26.0</span>               <span class="token comment"># Room temp 26C</span>
+EVENT_REACTION_TIME_MS <span class="token operator">=</span> <span class="token number">0.045</span>   <span class="token comment"># The Reaction time from a command to physical event</span>
 
 <span class="token keyword keyword-class">class</span> <span class="token class-name">422LinkType</span><span class="token punctuation">(</span>Enum<span class="token punctuation">)</span><span class="token punctuation">:</span>
     NORMAL <span class="token operator">=</span> auto<span class="token punctuation">(</span><span class="token punctuation">)</span>
@@ -512,9 +562,9 @@ logger<span class="token punctuation">.</span>addHandler<span class="token punct
     tester<span class="token punctuation">.</span>set_temp<span class="token punctuation">(</span>ROOM_TEMP_C<span class="token punctuation">)</span>
     tester<span class="token punctuation">.</span>set_422_link<span class="token punctuation">(</span>422LinkType<span class="token punctuation">.</span>NORMAL<span class="token punctuation">)</span>
 
-    <span class="token comment"># Step 2: Perform time synchronization using NTP</span>
-    linux_computer<span class="token punctuation">.</span>ntp_sync<span class="token punctuation">(</span><span class="token punctuation">)</span>
-    tester<span class="token punctuation">.</span>ntp_sync<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token comment"># Step 2: Perform time synchronization using GPS Clock</span>
+    linux_computer<span class="token punctuation">.</span>gps_sync<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    tester<span class="token punctuation">.</span>gps_sync<span class="token punctuation">(</span><span class="token punctuation">)</span>
 
     <span class="token comment"># Start trace logging thread</span>
     stop_event <span class="token operator">=</span> threading<span class="token punctuation">.</span>Event<span class="token punctuation">(</span><span class="token punctuation">)</span>
@@ -553,24 +603,22 @@ logger<span class="token punctuation">.</span>addHandler<span class="token punct
     imu<span class="token punctuation">,</span> tester<span class="token punctuation">,</span> linux_computer<span class="token punctuation">,</span> stop_event <span class="token operator">=</span> setup_imu_and_tester
 
     <span class="token comment"># Step 3-4: Trigger a physical event of the given size on the specified axis</span>
-    event_time <span class="token operator">=</span> tester<span class="token punctuation">.</span>set_rate_table<span class="token punctuation">(</span>axis<span class="token operator">=</span>axis<span class="token punctuation">,</span> degree<span class="token operator">=</span>turn_degrees<span class="token punctuation">)</span>
-
-    <span class="token comment"># Record the exact time of the physical event (this will be T_event)</span>
-    event_timestamp <span class="token operator">=</span> time<span class="token punctuation">.</span>perf_counter<span class="token punctuation">(</span><span class="token punctuation">)</span>
+	<span class="token comment"># Return the exact time of the physical event (this will be T_event)</span>
+    event_timestamp <span class="token operator">=</span> tester<span class="token punctuation">.</span>set_rate_table<span class="token punctuation">(</span>axis<span class="token operator">=</span>axis<span class="token punctuation">,</span> degree<span class="token operator">=</span>turn_degrees<span class="token punctuation">)</span>
 
     <span class="token comment"># Capture the IMU System's response data timestamp</span>
     imu_data <span class="token operator">=</span> linux_computer<span class="token punctuation">.</span>get_data<span class="token punctuation">(</span><span class="token punctuation">)</span>  <span class="token comment"># Assuming this method fetches the data with timestamp</span>
 
     <span class="token comment"># Calculate latency (T_output - T_event)</span>
-    latency <span class="token operator">=</span> <span class="token punctuation">(</span>imu_data<span class="token punctuation">[</span><span class="token string">'timestamp'</span><span class="token punctuation">]</span> <span class="token operator">-</span> event_timestamp<span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">1000</span>  <span class="token comment"># Convert to milliseconds</span>
+    latency_ms <span class="token operator">=</span> <span class="token punctuation">(</span>imu_data<span class="token punctuation">[</span><span class="token string">'timestamp'</span><span class="token punctuation">]</span> <span class="token operator">-</span> event_timestamp<span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">1000</span> <span class="token operator">-</span> EVENT_REACTION_TIME_MS
 
     <span class="token comment"># Log message for the specific axis and turn</span>
-    logger<span class="token punctuation">.</span>info<span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"IMU latency for </span><span class="token interpolation"><span class="token punctuation">{</span>axis<span class="token punctuation">}</span></span><span class="token string"> axis, </span><span class="token interpolation"><span class="token punctuation">{</span>turn_degrees<span class="token punctuation">}</span></span><span class="token string"> degree: </span><span class="token interpolation"><span class="token punctuation">{</span>latency<span class="token punctuation">:</span><span class="token format-spec">.3f</span><span class="token punctuation">}</span></span><span class="token string"> ms"</span></span><span class="token punctuation">)</span>
+    logger<span class="token punctuation">.</span>info<span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"IMU latency for </span><span class="token interpolation"><span class="token punctuation">{</span>axis<span class="token punctuation">}</span></span><span class="token string"> axis, </span><span class="token interpolation"><span class="token punctuation">{</span>turn_degrees<span class="token punctuation">}</span></span><span class="token string"> degree: </span><span class="token interpolation"><span class="token punctuation">{</span>latency_ms<span class="token punctuation">:</span><span class="token format-spec">.3f</span><span class="token punctuation">}</span></span><span class="token string"> ms"</span></span><span class="token punctuation">)</span>
 
     <span class="token comment"># Step 5: Assert that the latency is below the maximum allowed value</span>
     <span class="token keyword keyword-try">try</span><span class="token punctuation">:</span>
-        <span class="token keyword keyword-assert">assert</span> latency <span class="token operator">&lt;=</span> MAX_LATENCY_MS<span class="token punctuation">,</span> <span class="token punctuation">(</span>
-            <span class="token string-interpolation"><span class="token string">f"Latency too high: </span><span class="token interpolation"><span class="token punctuation">{</span>latency<span class="token punctuation">:</span><span class="token format-spec">.3f</span><span class="token punctuation">}</span></span><span class="token string"> ms for </span><span class="token interpolation"><span class="token punctuation">{</span>axis<span class="token punctuation">}</span></span><span class="token string"> axis, </span><span class="token interpolation"><span class="token punctuation">{</span>event_size<span class="token punctuation">}</span></span><span class="token string"> event"</span></span>
+        <span class="token keyword keyword-assert">assert</span> latency_ms <span class="token operator">&lt;=</span> MAX_LATENCY_MS<span class="token punctuation">,</span> <span class="token punctuation">(</span>
+            <span class="token string-interpolation"><span class="token string">f"Latency too high: </span><span class="token interpolation"><span class="token punctuation">{</span>latency_ms<span class="token punctuation">:</span><span class="token format-spec">.3f</span><span class="token punctuation">}</span></span><span class="token string"> ms for </span><span class="token interpolation"><span class="token punctuation">{</span>axis<span class="token punctuation">}</span></span><span class="token string"> axis, </span><span class="token interpolation"><span class="token punctuation">{</span>event_size<span class="token punctuation">}</span></span><span class="token string"> event"</span></span>
         <span class="token punctuation">)</span>
     <span class="token keyword keyword-except">except</span> AssertionError <span class="token keyword keyword-as">as</span> e<span class="token punctuation">:</span>
         logger<span class="token punctuation">.</span>error<span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"Assertion failed: </span><span class="token interpolation"><span class="token punctuation">{</span>e<span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
@@ -578,8 +626,8 @@ logger<span class="token punctuation">.</span>addHandler<span class="token punct
 
 
 <span class="token comment"># Test framework API assumptions:</span>
-<span class="token comment"># imu.ntp_sync() -&gt; Synchronizes IMU clock with NTP</span>
-<span class="token comment"># tester.ntp_sync() -&gt; Synchronizes Tester computer clock with NTP</span>
+<span class="token comment"># imu.gps_sync() -&gt; Synchronizes IMU clock with GPS Clock</span>
+<span class="token comment"># tester.gps_sync() -&gt; Synchronizes Tester computer clock with GPS Clock</span>
 <span class="token comment"># tester.set_rate_table(axis, degree) -&gt; Triggers a physical event of specified degree on the given axis and returns the event time</span>
 <span class="token comment"># linux_computer.get_data() -&gt; Returns a dictionary with IMU data and a 'timestamp' key indicating when the data was published</span>
 <span class="token comment"># linux_computer.get_system_stats() -&gt; Returns system statistics from the Linux computer</span>
@@ -589,7 +637,7 @@ logger<span class="token punctuation">.</span>addHandler<span class="token punct
 <span class="token comment"># ResultUploader.upload_results(results) -&gt; Uploads test results after the test suite completes</span>
 </code></pre><h2 id="team-processes-and-tools">Team, Processes, and Tools </h2>
 <h3 id="team">Team </h3>
-<p><strong>Electircal Eng:</strong></p>
+<p><strong>Electrical Eng:</strong></p>
 <ul>
 <li>Talking to EE for board specs and power requirements. Any circuit related deep dive.</li>
 <li>Request test points for future rev.</li>
@@ -598,9 +646,10 @@ logger<span class="token punctuation">.</span>addHandler<span class="token punct
 </ul>
 <p><strong>Firmware Eng:</strong></p>
 <ul>
-<li>Reling on fw team to help understand certain system behavoir, debug trace.</li>
+<li>Communicate to fw dev on what is our existing automation tester capability.</li>
+<li>Collaborate on fw team to help understand certain system behavior, debug trace.</li>
 <li>Request additional data logging or new service routine to be added.</li>
-<li>Scope automation infra needs for developers to create tests as the develop new fetures.</li>
+<li>Scope automation infra needs for developers to create tests as the develop new features.</li>
 </ul>
 <p><strong>QA Eng:</strong></p>
 <ul>
@@ -612,24 +661,26 @@ logger<span class="token punctuation">.</span>addHandler<span class="token punct
 <p><strong>System Integration Eng:</strong></p>
 <ul>
 <li>Learn about the subsystem bug that escaped to system level and add coverages.</li>
-<li>Learn about time cosuming operations that can be helped with automation test coverages.</li>
+<li>Learn about time consuming operations that can be helped with automation test coverages.</li>
 <li>Align on coverage distribution, don't step over each other.</li>
 </ul>
 <p><strong>Tech:</strong></p>
 <ul>
 <li>Request build help.</li>
 <li>Document feedback &amp; red line.</li>
-<li>Learn about commonly stocked/prefered common parts.</li>
+<li>Learn about commonly stocked/preferred common parts.</li>
 <li>Learn about how to improve build documents.</li>
 </ul>
 <p><strong>Test Automation Eng:</strong></p>
 <ul>
-<li>New infrastruct to that is been added.</li>
+<li>Share latest development of infrastures and best practices.</li>
 <li>Learn about other subsystem automation setup and what can be reused.</li>
 </ul>
 <h3 id="processes-and-tools">Processes and Tools </h3>
-<p>A <strong>nice-to-have</strong> leader board for people to put up their common conplaints and desired quality of<br>
-life improvement will be a good way to create traction on making feedback or improvoments.</p>
+<p>Having a interactive test requirement tracking process would be helpful for a rapidly moving organization.<br>
+As new requirement and assumptions emerge quickly in a start up. An easy to use <code>test requirement tracking matrix</code> tool that could provide low friction for developer to keep it up to date, and also provide a tracking of existing coverage and their state of health would offer great benefit. The team can have the minimum amount of coverage at early stage with quick implementation and add duplicated coverage when feature matured for more test bandwidth and availability.</p>
+<p>A <strong>nice-to-have</strong> leader board for people to put up their common complaints and desired quality of<br>
+life improvement will be a good way to create traction on making feedback or improvements.</p>
 <p>New tool <strong>show and tell</strong> or <strong>technical section deep dive</strong> will be good ways to share lessons learned<br>
 and grow the general knowledge on systems.</p>
 </div>
